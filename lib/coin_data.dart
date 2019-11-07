@@ -1,6 +1,86 @@
-class CoinData {}
+import 'dart:convert' as convert;
+import 'package:http/http.dart' as http;
 
-const List<String>currenciesList=[
+const bitcoinAverageURL =
+    'https://apiv2.bitcoinaverage.com/indices/global/ticker';
+
+class CoinData {
+  Future getCoinData1() async {
+
+    //4. Create a url combining the bitcoinAverageURl with the currencies we're interested, BTC to USD.
+    String requestURL='$bitcoinAverageURL/BTCUSD';
+
+    //5. Make a GET request to the URL and wait for the response.
+    http.Response response= await http.get(requestURL);
+
+    //6. Check that the request was successful.
+
+    if(response.statusCode==200)
+      {
+        //7. Use the 'dart:convert' package to decode the JSON data that comes back from BitcoinAverage.
+
+        var decodeData=convert.jsonDecode(response.body);
+
+        //8. Get the last price of bitcoin with the key 'last'.
+
+        var lastPrice=decodeData['last'];
+
+        //9. Output the lastPrice from the method.
+
+        return lastPrice;
+      }
+    else
+      {
+        //10. Handle any errors that occur during the request
+        
+        print(response.statusCode);
+        //Optional: throw an error if our request fails.
+        throw 'Problem With the get request';
+      }
+  }
+
+
+  //3: Update getCoinData to take the selectedCurrency as an input
+  Future getCoinData(String selectedCurrency) async {
+
+    //4: Update the URL to use the selectedCurrency input.
+    String requestURL='$bitcoinAverageURL/BTC$selectedCurrency';
+
+    //5. Make a GET request to the URL and wait for the response.
+    http.Response response= await http.get(requestURL);
+
+    //6. Check that the request was successful.
+
+    if(response.statusCode==200)
+    {
+      //7. Use the 'dart:convert' package to decode the JSON data that comes back from BitcoinAverage.
+
+      var decodeData=convert.jsonDecode(response.body);
+
+      //8. Get the last price of bitcoin with the key 'last'.
+
+      var lastPrice=decodeData['last'];
+
+      //9. Output the lastPrice from the method.
+
+      return lastPrice;
+    }
+    else
+    {
+      //10. Handle any errors that occur during the request
+
+      print(response.statusCode);
+      //Optional: throw an error if our request fails.
+      throw 'Problem With the get request';
+    }
+  }
+
+
+
+
+}
+
+const List<String> currenciesList = [
   'AUD',
   'BRL',
   'CAD',
@@ -24,9 +104,4 @@ const List<String>currenciesList=[
   'ZAR'
 ];
 
-const List<String> cryptoList=[
-
-  'BTC',
-  'ETH',
-  'LTC'
-];
+const List<String> cryptoList = ['BTC', 'ETH', 'LTC'];
