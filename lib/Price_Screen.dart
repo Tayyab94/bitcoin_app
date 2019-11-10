@@ -84,14 +84,25 @@ class _PriceScreenState extends State<PriceScreen> {
   String bitcoinValueInUSD='?';
 
 
-  //11. Create an async method here await the coin data from coin_data.dart
 
+  //value had to be updated into a Map to store the values of all three cryptocurrencies.
+  Map<String,String>coinValue={};
+
+  //7: Figure out a way of displaying a '?' on screen while we're waiting for the price data to come back. First we have to create a variable to keep track of when we're waiting on the request to complete.
+  bool isWaiting = false;
+
+  //11. Create an async method here await the coin data from coin_data.dart
   void getData()async{
+    isWaiting=true;
     try{
-          double data=await CoinData().getCoinData(SelectedCurrency);
+          var data=await CoinData().getCoinData(SelectedCurrency);
+
+          isWaiting=false;
+
       //13. We can't await in a setState(). So you have to separate it out into two steps.
       setState(() {
-        bitcoinValueInUSD=data.toStringAsFixed(0);
+     //   bitcoinValueInUSD=data.toStringAsFixed(0);
+          coinValue=data;
       });
     }
     catch(e)
@@ -118,33 +129,32 @@ class _PriceScreenState extends State<PriceScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Padding(
-            padding: EdgeInsets.fromLTRB(18, 18, 18, 0),
-            child: Card(
-              color: Colors.lightBlueAccent,
-              elevation: 5.0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              CryptoCard(
+                cryptoCurrency:'BTC',
+                value: isWaiting? '?':coinValue['BTC'],
+                SelectedCurrency: SelectedCurrency,
               ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 15, horizontal: 28),
-                child: Text(
-                  '1 BTC = $bitcoinValueInUSD USD',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.white,
-                  ),
-                ),
+              CryptoCard(
+                cryptoCurrency:'ETH',
+                value: isWaiting? '?':coinValue['ETH'],
+                SelectedCurrency: SelectedCurrency,
               ),
-            ),
+              CryptoCard(
+                cryptoCurrency:'LTC',
+                value: isWaiting? '?':coinValue['LTC'],
+                SelectedCurrency: SelectedCurrency,
+              ),
+            ],
           ),
           Container(
             height: 150,
             alignment: Alignment.center,
             padding: EdgeInsets.only(bottom: 30),
             color: Colors.lightBlue,
-            child:getPicker(),
+            child:Platform.isIOS? IosPicker(): androidDrodown(),
           ),
         ],
       ),
@@ -154,4 +164,41 @@ class _PriceScreenState extends State<PriceScreen> {
 
 
 // this code is use to make dropdwon in Android PHoen AppBa, In replace of it we have added cupertinoPicker (Fluter's Package)
+
+
+
+//1: Refactor this Padding Widget into a separate Stateless Widget called CryptoCard,
+// so we can create 3 of them, one for each cryptocurrency.
+
+class CryptoCard extends StatelessWidget {
+
+  const CryptoCard({this.value, this.SelectedCurrency, this .cryptoCurrency});
+  final String value;
+  final String SelectedCurrency;
+  final String cryptoCurrency;
+  @override
+  Widget build(BuildContext context) {
+    return    Padding(
+      padding: EdgeInsets.fromLTRB(18, 18, 18, 0),
+      child: Card(
+        color: Colors.lightBlueAccent,
+        elevation: 5.0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 28),
+          child: Text(
+            '1 $cryptoCurrency = $value $SelectedCurrency',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 20,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
